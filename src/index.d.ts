@@ -1,1 +1,1 @@
-export {};
+import './sass/style.scss';

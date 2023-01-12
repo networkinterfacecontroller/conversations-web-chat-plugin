@@ -1,3 +1,5 @@
 @charset 'utf-8';
 
-//@import '../../node_modules/bulma/bulma.sass';
+.paste-chat-composer-content-editable {
+    max-width: calc(100% - 20px);
+  }
