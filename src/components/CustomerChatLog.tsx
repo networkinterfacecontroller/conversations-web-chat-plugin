@@ -1,6 +1,7 @@
 import React from "react";
 import {
   useChatLogger,
+  PartialIDChat,
   ChatLogger,
   ChatBookend,
   ChatBookendItem,
@@ -15,9 +16,30 @@ import { AutoScrollPlugin, $getRoot } from "@twilio-paste/lexical-library";
 
 import { SendButtonPlugin } from "./SendButtonPlugin";
 import { createNewMessage } from "./helpers";
+import { Message, ParticipantBindingOptions } from "@twilio/conversations";
 
-export const CustomerChatLog: React.FC = () => {
+export const CustomerChatLog: React.FC<{messages: Array<Message>}> = ({ messages }) => {
   const scrollRef = React.createRef<HTMLDivElement>();
+  
+  
+  // const chatArray: Array<PartialIDChat> = [];
+
+  // // Make ChatMessages out of Conversations Messages TODO: Inbound vs Outbound
+  // messages.forEach((m) => {
+  //   chatArray.push ({
+  //     variant: "inbound",
+  //     content: (
+  //       <ChatMessage variant="inbound">
+  //         <ChatBubble>${m.body}</ChatBubble>
+  //         <ChatMessageMeta aria-label={"said by " + m.author +" at " + m.dateCreated}>
+  //           <ChatMessageMetaItem>{m.author +" ・ " + m.dateCreated}</ChatMessageMetaItem>
+  //         </ChatMessageMeta>
+  //       </ChatMessage>
+  //     )
+  //   })
+  // });
+
+  // Replace these dummys with real messages and change the type it takes into an array
   const { chats, push } = useChatLogger(
     {
       content: (
@@ -41,6 +63,7 @@ export const CustomerChatLog: React.FC = () => {
       )
     }
   );
+  
   const [message, setMessage] = React.useState("");
 
   const handleComposerChange = (editorState: any): void => {
