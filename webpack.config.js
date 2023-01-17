@@ -1,7 +1,4 @@
 const path = require('path');
-
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 module.exports = {
@@ -29,9 +26,6 @@ module.exports = {
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
-                    options: {
-                        plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean)
-                    }
                 }
             },
             {
@@ -60,6 +54,5 @@ module.exports = {
                 }
             }
         ]
-    },
-    "plugins": [isDevelopment && new ReactRefreshWebpackPlugin()].filter(Boolean)
+    }
 }

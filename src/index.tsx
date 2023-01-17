@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { App } from "./App";
 import { Theme } from "@twilio-paste/theme";
 
-import './sass/styles.css';
+import './sass/styles.scss';
 
 const container = document.getElementById('app');
 ReactDOM.render(

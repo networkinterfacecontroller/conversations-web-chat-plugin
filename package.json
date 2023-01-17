@@ -21,11 +21,14 @@
     "@twilio-paste/chat-composer": "^1.0.1",
     "@twilio-paste/chat-log": "^2.1.1",
     "@twilio-paste/minimizable-dialog": "^1.0.3",
+    "@twilio-paste/skeleton-loader": "^3.0.1",
     "@twilio-paste/theme": "^8.1.1",
     "@twilio/conversations": "^2.2.1",
+    "axios": "^1.2.2",
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -35,6 +38,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.10",
     "@types/react": "^17.0.52",
     "@types/react-dom": "^17.0.18",
+    "@types/uuid": "^9.0.0",
     "babel-loader": "^9.1.2",
     "css-loader": "^6.7.3",
     "file-loader": "^6.2.0",
