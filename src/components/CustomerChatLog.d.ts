@@ -1,2 +1,5 @@
 import React from "react";
-export declare const CustomerChatLog: React.FC;
+import { Client } from "@twilio/conversations";
+export declare const CustomerChatLog: React.FC<{
+    client: Client | undefined;
+}>;
