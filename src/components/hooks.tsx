@@ -31,7 +31,6 @@ export const useConversations = () => {
     }, [])
 
     client?.on('connectionStateChanged', (state) => {
-        console.log('the new state is: ' + state + ' the time is ' + Date.now())
         if (state == 'connected' && (!(connected))) {
             const getConversation = async () => {
                 let sid = localStorage.getItem('webchat-sid')
@@ -99,7 +98,6 @@ export const useMessages = (conversation: Conversation) => {
         }
         getHistory();
         conversation.on('messageAdded', message => {
-            console.log(message + ' message added at ' + Date.now())
             push(chatBuilder(message))
         })
     }, [])
