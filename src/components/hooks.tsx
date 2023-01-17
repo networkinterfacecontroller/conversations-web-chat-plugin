@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { Client, ConnectionState, Conversation, Message } from "@twilio/conversations";
+import { Client, Conversation, Message } from "@twilio/conversations";
 import { ChatBookend, ChatBookendItem, ChatBubble, ChatMessage, MessageVariants, PartialIDChat, useChatLogger } from "@twilio-paste/chat-log";
 import React from "react";
 
@@ -9,11 +9,12 @@ export const useConversations = () => {
     const [conversation, setConversation] = useState<Conversation>()
     const [client, setClient] = useState<Client>()
     let connected = false
+    const tokenUrl = ''
 
     useEffect(() => {
         const initialize = async () => {
             //use uuid as identity for the token
-            let token = (await axios.get('https://webchat-tester-8074.twil.io/token?identity=' + uid, {})).data
+            let token = (await axios.get(tokenUrl + '?identity=' + uid, {})).data
             let client = new Client(token)
             setClient(client)
 
