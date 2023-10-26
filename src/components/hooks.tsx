@@ -3,6 +3,8 @@ import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { Client, Conversation, Message } from "@twilio/conversations";
 import { ChatBookend, ChatBookendItem, ChatBubble, ChatMessage, MessageVariants, PartialIDChat, useChatLogger } from "@twilio-paste/chat-log";
+import { format } from "date-fns";
+import { CHAT_START_DATE_FORMAT, CHAT_START_TEXT } from "../config";
 import React from "react";
 
 export const useConversations = () => {
@@ -31,6 +33,7 @@ export const useConversations = () => {
         initialize();
     }, [])
 
+    // Set the conversations if there is one, otherwise creates a new conversation.
     client?.on('connectionStateChanged', (state) => {
         if (state == 'connected' && (!(connected))) {
             const getConversation = async () => {
@@ -69,19 +72,34 @@ const chatBuilder = (message: Message): PartialIDChat => {
     }
 }
 
-export const useMessages = (conversation: Conversation) => {
-    const { chats, push } = useChatLogger(
-        {
-            content: (
-                <ChatBookend>
-                    <ChatBookendItem>
-                        <strong>Chat Started</strong>・
-                    </ChatBookendItem>
-                </ChatBookend>
-            )
+export const useMessages = (conversation: Conversation) => {   
+    const { chats, push } = useChatLogger();
+
+    const getDateTime = () => {
+        const storedDate = localStorage.getItem('chatStartDate');
+        if (storedDate) {
+            return format(new Date(storedDate), CHAT_START_DATE_FORMAT);
+        } else {
+            const now = new Date();
+            localStorage.setItem('chatStartDate', now.toString());
+            return format(now, CHAT_START_DATE_FORMAT);
         }
-    );
+    };
+    
+    const dateTime = getDateTime();
+
     useEffect(() => {
+        
+        push({
+            content: (
+            <ChatBookend>
+                <ChatBookendItem>
+                <strong>{CHAT_START_TEXT}{dateTime}</strong>
+                </ChatBookendItem>
+            </ChatBookend>
+            )
+        });
+        
         const getHistory = async () => {
             let paginator = await conversation.getMessages(undefined, undefined, 'forward')
             let more: boolean
