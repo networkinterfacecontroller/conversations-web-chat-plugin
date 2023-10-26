@@ -7,6 +7,7 @@ import {
   MinimizableDialogContent,
   useMinimizableDialogState
 } from "@twilio-paste/minimizable-dialog";
+import { HEADER_TEXT } from "../config";
 import { ChatIcon } from "@twilio-paste/icons/esm/ChatIcon";
 
 export const ChatDialog: React.FC<{ children: React.ReactNode }> = ({
@@ -20,8 +21,8 @@ export const ChatDialog: React.FC<{ children: React.ReactNode }> = ({
           <ChatIcon decorative={false} title="Chat" />
         </MinimizableDialogButton>
       )}
-      <MinimizableDialog aria-label="Live chat">
-        <MinimizableDialogHeader>Live chat</MinimizableDialogHeader>
+      <MinimizableDialog aria-label={HEADER_TEXT}>
+        <MinimizableDialogHeader>{HEADER_TEXT}</MinimizableDialogHeader>
         <MinimizableDialogContent>{children}</MinimizableDialogContent>
       </MinimizableDialog>
     </MinimizableDialogContainer>
