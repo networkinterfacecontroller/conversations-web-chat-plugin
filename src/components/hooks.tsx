@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { Client, Conversation, Message } from "@twilio/conversations";
@@ -10,48 +10,60 @@ import React from "react";
 export const useConversations = () => {
     const [conversation, setConversation] = useState<Conversation>()
     const [client, setClient] = useState<Client>()
+    const tokenUrl = process.env.REACT_APP_TOKEN_SERVICE_URL
     let connected = false
-    const tokenUrl = ''
 
     useEffect(() => {
         const initialize = async () => {
-            //use uuid as identity for the token
-            let token = (await axios.get(tokenUrl + '?identity=' + uid, {})).data
-            let client = new Client(token)
-            setClient(client)
+            try {
+                
+                // Get or create and set the user's uuid
+                const uid = localStorage.getItem('webchat-uuid') || uuid();
+                localStorage.setItem('webchat-uuid', uid)
 
-        }
-        //retrieving unique id per browser
-        //this functions as a pseudoanonymous identifier for the human on the other end of the webchat
-        //create if it doesn't exist
-        let uid = localStorage.getItem('webchat-uuid')
-        if (!(uid)) {
-            uid = uuid()
-            localStorage.setItem('webchat-uuid', uid)
+                // Use the uuid as the user's identity for the token
+                const response = await axios.get(`${tokenUrl}?identity=${uid}`)
+                const token = response.data
+                const newClient = new Client(token)
+                setClient(newClient)
+            } catch (error) {
+                console.error('Error initializing client:', error);
+            }
         }
 
         initialize();
     }, [])
 
-    // Set the conversations if there is one, otherwise creates a new conversation.
-    client?.on('connectionStateChanged', (state) => {
-        if (state == 'connected' && (!(connected))) {
-            const getConversation = async () => {
-                let sid = localStorage.getItem('webchat-sid')
-                let conversation
-                if (!(sid)) {
-                    conversation = await client.createConversation()
-                    await conversation.join()
-                    localStorage.setItem('webchat-sid', conversation.sid)
-                } else {
-                    conversation = await client.getConversationBySid(sid)
-                }
-                setConversation(conversation)
+
+    useEffect(() => {
+        if (!client) return;
+
+        const handleConnectionStateChanged = async (state: string) => {
+            try {
+	            if (state == 'connected' && !connected) {
+	                let sid = localStorage.getItem('webchat-sid')
+	                let conversation
+	                if (!(sid)) {
+	                    conversation = await client.createConversation()
+	                    await conversation.join()
+	                    localStorage.setItem('webchat-sid', conversation.sid)
+	                } else {
+	                    conversation = await client.getConversationBySid(sid)
+	                }
+	                setConversation(conversation)
+	            }
+	            connected = true;
+            } catch (error) {
+                console.error('Error handling connection state change:', error);
             }
-            connected = true
-            getConversation()
         }
-    });
+
+        client.on('connectionStateChanged', handleConnectionStateChanged);
+
+        return () => {
+           client.off('connectionStateChanged', handleConnectionStateChanged); 
+        }
+    }, [client]);
 
     return conversation;
 }
@@ -72,24 +84,23 @@ const chatBuilder = (message: Message): PartialIDChat => {
     }
 }
 
-export const useMessages = (conversation: Conversation) => {   
+export const useMessages = (conversation: Conversation | undefined) => {       
     const { chats, push } = useChatLogger();
 
     const getDateTime = () => {
-        const storedDate = localStorage.getItem('chatStartDate');
-        if (storedDate) {
-            return format(new Date(storedDate), CHAT_START_DATE_FORMAT);
-        } else {
-            const now = new Date();
-            localStorage.setItem('chatStartDate', now.toString());
-            return format(now, CHAT_START_DATE_FORMAT);
+        let storedDate = localStorage.getItem('chatStartDate');
+        if (!storedDate) {
+          storedDate = new Date().toString();
+          localStorage.setItem('chatStartDate', storedDate);
         }
-    };
+        return format(new Date(storedDate), CHAT_START_DATE_FORMAT);
+      };
     
-    const dateTime = getDateTime();
+    const dateTime = useMemo(() => getDateTime(), []);
 
     useEffect(() => {
-        
+        if (!conversation) return;
+
         push({
             content: (
             <ChatBookend>
@@ -101,25 +112,37 @@ export const useMessages = (conversation: Conversation) => {
         });
         
         const getHistory = async () => {
-            let paginator = await conversation.getMessages(undefined, undefined, 'forward')
-            let more: boolean
-            let history: Message[] = []
-            do {
-                paginator.items.forEach(message => {
-                    history.push(message)
-                })
-                more = paginator.hasNextPage
-                if (more) { paginator.nextPage() }
-            } while (more)
-            history.forEach(message => {
-                push(chatBuilder(message))
-            })
+            try {
+	            let paginator = await conversation.getMessages(undefined, undefined, 'forward')
+	            let history: Message[] = []
+	            do {
+	                history = [ ...history, ...paginator.items]
+	                
+	                if (paginator.hasNextPage) { 
+	                    paginator = await paginator.nextPage() 
+	                }
+	            } while (paginator.hasNextPage)
+	            
+	            history.forEach(message => {
+	                push(chatBuilder(message))
+	            })
+            } catch (error) {
+                console.error("Error fetching message history:", error);
+            }
         }
         getHistory();
-        conversation.on('messageAdded', message => {
+
+        const messageAddedHandler = (message: Message) => {
             push(chatBuilder(message))
-        })
-    }, [])
+        }
+
+        conversation.on('messageAdded', messageAddedHandler);
+
+        return () => {
+            conversation.off('messageAdded', messageAddedHandler)
+        }
+
+    }, [conversation])
 
     return chats
 }
