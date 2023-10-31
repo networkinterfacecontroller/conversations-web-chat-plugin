@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { ChatLogger } from "@twilio-paste/chat-log";
 import { ChatComposer } from "@twilio-paste/chat-composer";
 import { Box } from "@twilio-paste/box";
+import { SkeletonLoader } from "@twilio-paste/skeleton-loader";
 import {  
     $getRoot,
     ClearEditorPlugin,
@@ -13,9 +14,7 @@ import {
   } from "@twilio-paste/lexical-library";
 
 import { SendButtonPlugin } from "./SendButtonPlugin";
-import { Conversation} from "@twilio/conversations";
-import { useMessages } from "./hooks";
-
+import { useMessages, useConversations } from "./hooks";
 
 const EnterKeySubmitPlugin = ({ onKeyDown }: { onKeyDown: () => void }): null => {
   const [editor] = useLexicalComposerContext();
@@ -40,12 +39,13 @@ const EnterKeySubmitPlugin = ({ onKeyDown }: { onKeyDown: () => void }): null =>
 };
 
 
-export const CustomerChatLog: React.FC<{ conversation: Conversation }> = ({ conversation }) => {
+export const CustomerChatLog: React.FC = () => {
   const [message, setMessage] = React.useState("");
   const [mounted, setMounted] = React.useState(false);
   const loggerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLDivElement>(null);
 
+  const conversation = useConversations();
   const chats = useMessages(conversation);
 
   useEffect(() => {
@@ -64,6 +64,13 @@ export const CustomerChatLog: React.FC<{ conversation: Conversation }> = ({ conv
       setMessage(text);
     });
   };
+
+  if (!conversation) {
+    return (
+      <Box padding={"space30"}>
+        <SkeletonLoader borderRadius={"borderRadius0"} />
+      </Box>
+      );}
 
   return (
     <Box minHeight="size50" display="grid" gridTemplateRows="1fr auto">

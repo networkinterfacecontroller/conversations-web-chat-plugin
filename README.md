@@ -1,10 +1,10 @@
 # conversations-web-chat-plugin
 
-This an embeddable chat widget for Twilio Conversations. It uses the Paste design system for the UI and the Conversations SDK for chat. When a new user open the chat, it authenticates them anonymously, creates a conversation and adds them to it. To keep the context for returning users, it stores the user's `uuid` and `conversation_sid` in local storage.
+This an embeddable chat widget for Twilio Conversations. It uses the [Paste](https://paste.twilio.design/) design system for the UI and the [Conversations](https://www.twilio.com/en-us/messaging/apis/conversations-api) JS SDK for chat. When a new user opens the chat, it authenticates them anonymously, creates a conversation and adds them to it. To keep the context for returning users, it stores the user's `uuid` and `conversation_sid` in local storage.
 
 ## Authentication
 
-The Conversations SDK requires an access token signed with a Twilio API Key Secret in order to initialize and connect to Conversations. This token should created in a backend service to keep the secret secure. We do this with a [Twilio Function](https://www.twilio.com/docs/serverless/functions-assets/functions):
+The Conversations SDK requires an valid access token created with a Twilio API Key Secret in order to initialize and connect to Conversations. This token should created in a backend service to keep the secret secure. We do this with a [Twilio Function](https://www.twilio.com/docs/serverless/functions-assets/functions):
 
 ```javascript
 const headers = {
@@ -46,9 +46,11 @@ exports.handler = function(context, event, callback) {
 
 Conversations SDK token require a unique user `identity`. Since chat widget users are generally anonymous, this widget generates a `uuid` for each user and sends that as the `identity`.
 
+Create a `.env` file and set `REACT_APP_TOKEN_SERVICE_URL=https://your-endpoint-example.com/chat-widget`.
+
 ## Chatbots
 
-You can optionally connect chatbot to talk to users. Conversations Webhooks are the best way to power this type of automation. Optionally, you can also connect to Twilio Studio Flows for drag and drop chatbot workflows.
+You can optionally connect chatbot to talk to users. Conversations Webhooks are the best way to power this type of automation. Optionally, you can also connect to Twilio Studio Flows for drag and drop workflows.
 
 1. Create a Global or Service Scoped Webhook that triggers `onConversationAdded` events. Set the target to a Twilio Funcion (or your own backend service) for the next step.
 
@@ -79,4 +81,4 @@ exports.handler = function(context, event, callback) {
 };
 ```
 
-3. Respond to incoming messages via the Converations API or a Studio Flow. If using the API, the [onMessageAdded event](https://www.twilio.com/docs/conversations/conversations-webhooks#onmessageadded) will have all the context you need to respond. For Studio, the "Incoming Conversation" trigger is a great place to start.
+3. Respond to incoming messages via the Converations API or a Studio Flow. If using the API, the [onMessageAdded event](https://www.twilio.com/docs/conversations/conversations-webhooks#onmessageadded) will have all the context you need to respond. For Studio, use the "Incoming Conversation" trigger and the the Send and Wait for Reply widgets to start.
